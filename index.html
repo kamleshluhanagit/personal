@@ -1,126 +1,109 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Daily Health Tracker</title>
-
-<!-- Tailwind CSS -->
-<script src="https://cdn.tailwindcss.com"></script>
-
-<style>
-body { font-family: 'Inter', sans-serif; }
-.tab { cursor: pointer; }
-.tab-active { background-color: #1f2937; }
-</style>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Daily Health Tracker</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style> body{font-family:Inter, sans-serif} .tab{cursor:pointer} .tab-active{background-color:#1f2937} </style>
 </head>
 <body class="bg-gray-900 text-white p-6 min-h-screen">
+  <div class="max-w-3xl mx-auto bg-gray-800 p-6 rounded-2xl shadow-xl">
+    <h1 class="text-3xl font-bold text-center mb-6">Daily Health Tracker</h1>
 
-<div class="max-w-3xl mx-auto bg-gray-800 p-6 rounded-2xl shadow-xl">
-<h1 class="text-3xl font-bold text-center mb-6">Daily Health Tracker</h1>
+    <div class="grid grid-cols-3 mb-6 text-center font-semibold">
+      <div id="daily-tab-btn" class="tab tab-active p-3 rounded-xl" onclick="openTab('daily-tab')">Daily Entry</div>
+      <div id="viewer-tab-btn" class="tab p-3 rounded-xl" onclick="openTab('viewer-tab')">Record Viewer</div>
+      <div id="analytics-tab-btn" class="tab p-3 rounded-xl" onclick="openTab('analytics-tab')">Analytics</div>
+    </div>
 
-<!-- TABS -->
-<div class="grid grid-cols-3 mb-6 text-center font-semibold">
-  <div id="daily-tab-btn" class="tab tab-active p-3 rounded-xl" onclick="openTab('daily-tab')">Daily Entry</div>
-  <div id="viewer-tab-btn" class="tab p-3 rounded-xl" onclick="openTab('viewer-tab')">Record Viewer</div>
-  <div id="analytics-tab-btn" class="tab p-3 rounded-xl" onclick="openTab('analytics-tab')">Analytics</div>
-</div>
+    <!-- DAILY ENTRY -->
+    <div id="daily-tab" class="tab-page">
+      <form id="health-form" class="space-y-6" onsubmit="event.preventDefault(); submitForm();">
+        <div>
+          <label>Date</label>
+          <input id="entry-date" name="date" type="date" class="w-full p-3 rounded bg-gray-700" required>
+        </div>
 
-<!-- DAILY ENTRY TAB -->
-<div id="daily-tab" class="tab-page">
-<form id="health-form" class="space-y-6">
+        <div class="grid grid-cols-2 gap-4">
+          <div>
+            <label>Presence of B</label>
+            <select id="presence-b" name="B" class="w-full p-3 rounded bg-gray-700"><option>No</option><option>Yes</option></select>
+          </div>
+          <div>
+            <label>Presence of Muc</label>
+            <select id="presence-muc" name="Muc" class="w-full p-3 rounded bg-gray-700"><option>No</option><option>Yes</option></select>
+          </div>
+        </div>
 
-<div>
-  <label>Date</label>
-  <input id="entry-date" type="date" class="w-full p-3 rounded bg-gray-700" required>
-</div>
+        <div>
+          <label>Frequency of visits</label>
+          <input id="frequency" name="frequency" type="number" class="w-full p-3 rounded bg-gray-700">
+        </div>
 
-<div class="grid grid-cols-2 gap-4">
-  <div>
-    <label>Presence of B</label>
-    <select id="presence-b" class="w-full p-3 rounded bg-gray-700">
-      <option>No</option>
-      <option>Yes</option>
-    </select>
+        <div class="bg-gray-700 p-4 rounded-xl">
+          <h2>Medications</h2>
+          <input id="pentasa" name="pentasa" type="number" placeholder="Pentasa (mg)" class="w-full p-3 rounded bg-gray-600 mb-2">
+          <input id="stero" name="stero" type="number" placeholder="Steroid (mg)" class="w-full p-3 rounded bg-gray-600 mb-2">
+          <input id="add-med" name="additionalMed" type="text" placeholder="Additional Med" class="w-full p-3 rounded bg-gray-600 mb-2">
+          <input id="suposit" name="suposit" type="text" placeholder="Suposit" class="w-full p-3 rounded bg-gray-600">
+        </div>
+
+        <div class="space-y-4">
+          <input id="breakfast" name="breakfast" placeholder="Breakfast" class="w-full p-3 rounded bg-gray-700">
+          <input id="lunch" name="lunch" placeholder="Lunch" class="w-full p-3 rounded bg-gray-700">
+          <input id="snacks" name="snacks" placeholder="Snacks" class="w-full p-3 rounded bg-gray-700">
+          <input id="dinner" name="dinner" placeholder="Dinner" class="w-full p-3 rounded bg-gray-700">
+          <input id="juices" name="juices" placeholder="Additional Juices" class="w-full p-3 rounded bg-gray-700">
+        </div>
+
+        <div>
+          <textarea id="comments" name="comments" rows="3" placeholder="Additional Comments" class="w-full p-3 rounded bg-gray-700"></textarea>
+        </div>
+
+        <div>
+          <input id="score" name="score" type="number" min="1" max="10" placeholder="Total Score (1–10)" class="w-full p-3 rounded bg-gray-700">
+        </div>
+
+        <button type="submit" class="w-full p-4 bg-blue-500 hover:bg-blue-600 rounded-xl">Save Daily Entry</button>
+      </form>
+    </div>
+
+    <!-- RECORD VIEWER -->
+    <div id="viewer-tab" class="tab-page hidden">
+      <h2>View Past Records</h2>
+      <input type="date" id="viewer-date" class="w-full p-3 rounded bg-gray-700">
+      <button onclick="loadRecord()" class="w-full mt-4 p-3 bg-green-500 rounded-xl">Load Record</button>
+      <div id="record-output" class="mt-6"></div>
+    </div>
+
+    <!-- ANALYTICS -->
+    <div id="analytics-tab" class="tab-page hidden">
+      <h2>Analytics & Filters</h2>
+      <div class="grid grid-cols-2 gap-4">
+        <input id="score-min" type="number" placeholder="Score Min" class="w-full p-3 rounded bg-gray-700">
+        <input id="score-max" type="number" placeholder="Score Max" class="w-full p-3 rounded bg-gray-700">
+      </div>
+
+      <div class="grid grid-cols-2 gap-4 mt-4">
+        <select id="filter-b" class="w-full p-3 rounded bg-gray-700">
+          <option>All</option><option>Yes</option><option>No</option>
+        </select>
+        <select id="filter-muc" class="w-full p-3 rounded bg-gray-700">
+          <option>All</option><option>Yes</option><option>No</option>
+        </select>
+      </div>
+
+      <button onclick="applyAnalytics()" class="w-full mt-4 p-3 bg-purple-500 rounded-xl">Apply Filters</button>
+      <div id="analytics-output" class="mt-6"></div>
+    </div>
   </div>
-  <div>
-    <label>Presence of Muc</label>
-    <select id="presence-muc" class="w-full p-3 rounded bg-gray-700">
-      <option>No</option>
-      <option>Yes</option>
-    </select>
-  </div>
-</div>
-
-<div>
-  <label>Frequency of visits</label>
-  <input id="frequency" type="number" class="w-full p-3 rounded bg-gray-700">
-</div>
-
-<div class="bg-gray-700 p-4 rounded-xl">
-  <h2>Medications</h2>
-  <input id="pentasa" type="number" placeholder="Pentasa (mg)" class="w-full p-3 rounded bg-gray-600 mb-2">
-  <input id="stero" type="number" placeholder="Steroid (mg)" class="w-full p-3 rounded bg-gray-600 mb-2">
-  <input id="add-med" type="text" placeholder="Additional Med" class="w-full p-3 rounded bg-gray-600 mb-2">
-  <input id="suposit" type="text" placeholder="Suposit" class="w-full p-3 rounded bg-gray-600">
-</div>
-
-<div class="space-y-4">
-  <input id="breakfast" placeholder="Breakfast" class="w-full p-3 rounded bg-gray-700">
-  <input id="lunch" placeholder="Lunch" class="w-full p-3 rounded bg-gray-700">
-  <input id="snacks" placeholder="Snacks" class="w-full p-3 rounded bg-gray-700">
-  <input id="dinner" placeholder="Dinner" class="w-full p-3 rounded bg-gray-700">
-  <input id="juices" placeholder="Additional Juices" class="w-full p-3 rounded bg-gray-700">
-</div>
-
-<div>
-  <textarea id="comments" rows="3" placeholder="Additional Comments" class="w-full p-3 rounded bg-gray-700"></textarea>
-</div>
-
-<div>
-  <input id="score" type="number" min="1" max="10" placeholder="Total Score (1–10)" class="w-full p-3 rounded bg-gray-700">
-</div>
-
-<button type="button" onclick="submitForm()" class="w-full p-4 bg-blue-500 hover:bg-blue-600 rounded-xl">Save Daily Entry</button>
-</form>
-</div>
-
-<!-- RECORD VIEWER TAB -->
-<div id="viewer-tab" class="tab-page hidden">
-<h2>View Past Records</h2>
-<input type="date" id="viewer-date" class="w-full p-3 rounded bg-gray-700">
-<button onclick="loadRecord()" class="w-full mt-4 p-3 bg-green-500 rounded-xl">Load Record</button>
-<div id="record-output" class="mt-6"></div>
-</div>
-
-<!-- ANALYTICS TAB -->
-<div id="analytics-tab" class="tab-page hidden">
-<h2>Analytics & Filters</h2>
-<div class="grid grid-cols-2 gap-4">
-  <input id="score-min" type="number" placeholder="Score Min" class="w-full p-3 rounded bg-gray-700">
-  <input id="score-max" type="number" placeholder="Score Max" class="w-full p-3 rounded bg-gray-700">
-</div>
-
-<div class="grid grid-cols-2 gap-4 mt-4">
-  <select id="filter-b" class="w-full p-3 rounded bg-gray-700">
-    <option>All</option><option>Yes</option><option>No</option>
-  </select>
-  <select id="filter-muc" class="w-full p-3 rounded bg-gray-700">
-    <option>All</option><option>Yes</option><option>No</option>
-  </select>
-</div>
-
-<button onclick="applyAnalytics()" class="w-full mt-4 p-3 bg-purple-500 rounded-xl">Apply Filters</button>
-<div id="analytics-output" class="mt-6"></div>
-</div>
-
-</div>
 
 <script>
-/** UPDATE THIS **/
-const GOOGLE_API = "https://script.google.com/macros/s/AKfycby0Cp-K9URn-7uC00FYPfgDNH6qcD35bePzKo5wDD9kevQVkaXxqaImXa54aioGt6eu/exec";
+/* paste your Apps Script /exec URL here */
+const GOOGLE_API = "https://script.google.com/macros/s/AKfycbw7dsDuFbmRB51ajDPPvitFdi5137Gkjhd-Uok5x8u8pEfjErwecqVLK6weLq8orOGT/exec";
 
-/* TABS */
+/* Tab handler */
 function openTab(tab) {
   document.querySelectorAll(".tab-page").forEach(pg => pg.classList.add("hidden"));
   document.getElementById(tab).classList.remove("hidden");
@@ -128,77 +111,87 @@ function openTab(tab) {
   document.getElementById(tab + "-btn").classList.add("tab-active");
 }
 
-/* SUBMIT FORM */
+/* Submit — uses URLSearchParams (no custom Content-Type header) to avoid preflight */
 async function submitForm() {
-  const form = new URLSearchParams();
+  const formEl = document.getElementById("health-form");
+  const fd = new FormData(formEl);
+  const params = new URLSearchParams();
 
-  [
-    "entry-date","presence-b","presence-muc","frequency","pentasa","stero","add-med",
-    "suposit","breakfast","lunch","snacks","dinner","juices","comments","score"
-  ].forEach(id => {
-    form.append(id.replace("entry-", "").replace("-", ""), document.getElementById(id).value);
-  });
+  for (const [k, v] of fd.entries()) {
+    params.append(k, v);
+  }
 
   try {
-    const res = await fetch(GOOGLE_API, { method: "POST", body: form });
+    const res = await fetch(GOOGLE_API, { method: "POST", body: params });
     const json = await res.json();
-    alert("Daily entry saved successfully!");
-    document.getElementById("health-form").reset();
-  } catch(err) {
+    if (json.saved) {
+      alert("Daily entry saved successfully!");
+      formEl.reset();
+    } else {
+      alert("Save failed: " + (json.error || JSON.stringify(json)));
+    }
+  } catch (err) {
     alert("Error saving entry: " + err);
   }
 }
 
-/* LOAD RECORD BY DATE */
+/* Load a record by date */
 async function loadRecord() {
   const date = document.getElementById("viewer-date").value;
   if (!date) return;
-
-  const res = await fetch(`${GOOGLE_API}?date=${date}`);
-  const data = await res.json();
-
-  if (!data.found) {
-    document.getElementById("record-output").innerHTML = `<p class="text-red-400 mt-4">No record found.</p>`;
-    return;
+  try {
+    const res = await fetch(`${GOOGLE_API}?date=${encodeURIComponent(date)}`);
+    const data = await res.json();
+    if (!data.found) {
+      document.getElementById("record-output").innerHTML = `<p class="text-red-400 mt-4">No record found for ${date}.</p>`;
+      return;
+    }
+    const r = data.record;
+    document.getElementById("record-output").innerHTML = `
+      <div class="p-4 bg-gray-700 rounded-xl">
+        <p><strong>Date:</strong> ${r.date}</p>
+        <p><strong>B:</strong> ${r.B}</p>
+        <p><strong>Muc:</strong> ${r.Muc}</p>
+        <p><strong>Frequency:</strong> ${r.frequency}</p>
+        <p><strong>Score:</strong> ${r.score}</p>
+        <p><strong>Comments:</strong> ${r.comments || ''}</p>
+      </div>`;
+  } catch (err) {
+    document.getElementById("record-output").innerHTML = `<p class="text-red-400 mt-4">Error: ${err}</p>`;
   }
-
-  const r = data.record;
-  document.getElementById("record-output").innerHTML = `
-    <div class="p-4 bg-gray-700 rounded-xl">
-      <p><strong>Date:</strong> ${r.date}</p>
-      <p><strong>B:</strong> ${r.B}</p>
-      <p><strong>Muc:</strong> ${r.Muc}</p>
-      <p><strong>Frequency:</strong> ${r.frequency}</p>
-      <p><strong>Score:</strong> ${r.score}</p>
-      <p><strong>Comments:</strong> ${r.comments}</p>
-    </div>`;
 }
 
-/* ANALYTICS */
+/* Analytics */
 async function applyAnalytics() {
-  const res = await fetch(`${GOOGLE_API}?all=true`);
-  const rows = await res.json();
-  let filtered = rows.records;
+  try {
+    const res = await fetch(`${GOOGLE_API}?all=true`);
+    const rows = await res.json();
+    if (!rows.records) {
+      document.getElementById("analytics-output").innerText = "No records.";
+      return;
+    }
+    let filtered = rows.records;
+    const scoreMin = document.getElementById("score-min").value;
+    const scoreMax = document.getElementById("score-max").value;
+    const filterB = document.getElementById("filter-b").value;
+    const filterMuc = document.getElementById("filter-muc").value;
 
-  const scoreMin = document.getElementById("score-min").value;
-  const scoreMax = document.getElementById("score-max").value;
-  const filterB = document.getElementById("filter-b").value;
-  const filterMuc = document.getElementById("filter-muc").value;
+    if (scoreMin) filtered = filtered.filter(r => Number(r.score) >= Number(scoreMin));
+    if (scoreMax) filtered = filtered.filter(r => Number(r.score) <= Number(scoreMax));
+    if (filterB !== "All") filtered = filtered.filter(r => r.B === filterB);
+    if (filterMuc !== "All") filtered = filtered.filter(r => r.Muc === filterMuc);
 
-  if (scoreMin) filtered = filtered.filter(r => r.score >= scoreMin);
-  if (scoreMax) filtered = filtered.filter(r => r.score <= scoreMax);
-  if (filterB !== "All") filtered = filtered.filter(r => r.B === filterB);
-  if (filterMuc !== "All") filtered = filtered.filter(r => r.Muc === filterMuc);
-
-  document.getElementById("analytics-output").innerHTML = filtered.map(r => `
-    <div class="p-4 bg-gray-700 rounded-xl mt-3">
-      <strong>${r.date}</strong><br>
-      Score: ${r.score}<br>
-      B: ${r.B}, Muc: ${r.Muc}, Freq: ${r.frequency}
-    </div>
-  `).join("");
+    document.getElementById("analytics-output").innerHTML = filtered.map(r => `
+      <div class="p-4 bg-gray-700 rounded-xl mt-3">
+        <strong>${r.date}</strong><br>
+        Score: ${r.score}<br>
+        B: ${r.B}, Muc: ${r.Muc}, Freq: ${r.frequency}
+      </div>`).join("");
+  } catch (err) {
+    document.getElementById("analytics-output").innerText = "Error: " + err;
+  }
 }
 </script>
-
 </body>
 </html>
+
