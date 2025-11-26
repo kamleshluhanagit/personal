@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Daily Health Tracker</title>
+
+<!-- Google Fonts -->
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600&display=swap" rel="stylesheet">
+
+<!-- TailwindCSS -->
+<script src="https://cdn.tailwindcss.com"></script>
+
+<style>
+body {
+  font-family: 'Inter', sans-serif;
+}
+</style>
+
+<script>
+const GOOGLE_API = "https://script.google.com/macros/s/AKfycbzDOgbUNsGe-fV2ZQaNjhJnPtyAZu6gRxx6N7ayOwGFW1cD-v5eTtrwBSR9cewsSu0_/exec";
+
+async function submitForm() {
+    const data = {
+        date: document.getElementById("entry-date").value,
+        B: document.getElementById("presence-b").value,
+        Muc: document.getElementById("presence-muc").value,
+        frequency: document.getElementById("frequency").value,
+        pentasa: document.getElementById("pentasa").value,
+        stero: document.getElementById("stero").value,
+        additionalMed: document.getElementById("add-med").value,
+        suposit: document.getElementById("suposit").value,
+        breakfast: document.getElementById("breakfast").value,
+        lunch: document.getElementById("lunch").value,
+        snacks: document.getElementById("snacks").value,
+        dinner: document.getElementById("dinner").value,
+        juices: document.getElementById("juices").value,
+        comments: document.getElementById("comments").value,
+        score: document.getElementById("score").value
+    };
+
+    const response = await fetch(GOOGLE_API, {
+        method: "POST",
+        mode: "no-cors",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(data)
+    });
+
+    alert("Daily entry saved successfully!");
+    document.getElementById("health-form").reset();
+}
+</script>
+
+</head>
+
+<body class="bg-gray-900 min-h-screen text-white p-6">
+
+<div class="max-w-3xl mx-auto bg-gray-800 p-8 rounded-2xl shadow-xl">
+
+<h1 class="text-3xl font-bold text-center mb-6">Daily Health Tracker</h1>
+
+<form id="health-form" class="space-y-6">
+
+<!-- Date -->
+<div>
+  <label class="block mb-2 font-semibold">Date</label>
+  <input id="entry-date" type="date" class="w-full p-3 rounded bg-gray-700 text-white" required>
+</div>
+
+<!-- Yes/No Fields -->
+<div class="grid grid-cols-2 gap-4">
+  <div>
+    <label class="block mb-2 font-semibold">Presence of B</label>
+    <select id="presence-b" class="w-full p-3 rounded bg-gray-700">
+      <option>No</option>
+      <option>Yes</option>
+    </select>
+  </div>
+
+  <div>
+    <label class="block mb-2 font-semibold">Presence of Muc</label>
+    <select id="presence-muc" class="w-full p-3 rounded bg-gray-700">
+      <option>No</option>
+      <option>Yes</option>
+    </select>
+  </div>
+</div>
+
+<!-- Frequency -->
+<div>
+  <label class="block mb-2 font-semibold">Frequency of visits</label>
+  <input id="frequency" type="number" class="w-full p-3 rounded bg-gray-700" required>
+</div>
+
+<!-- Medications -->
+<div class="bg-gray-700 p-4 rounded-xl">
+  <h2 class="text-xl font-semibold mb-3">Medications</h2>
+
+  <div class="space-y-4">
+    <div>
+      <label class="block mb-2">Pentasa (mg)</label>
+      <input id="pentasa" type="number" class="w-full p-3 rounded bg-gray-600">
+    </div>
+
+    <div>
+      <label class="block mb-2">Steroid (mg)</label>
+      <input id="stero" type="number" class="w-full p-3 rounded bg-gray-600">
+    </div>
+
+    <div>
+      <label class="block mb-2">Additional Med</label>
+      <input id="add-med" type="text" class="w-full p-3 rounded bg-gray-600">
+    </div>
+
+    <div>
+      <label class="block mb-2">Suposit</label>
+      <input id="suposit" type="text" class="w-full p-3 rounded bg-gray-600">
+    </div>
+  </div>
+</div>
+
+<!-- Meals -->
+<div class="space-y-4">
+  <div>
+    <label class="block mb-2 font-semibold">Breakfast</label>
+    <input id="breakfast" type="text" class="w-full p-3 rounded bg-gray-700">
+  </div>
+
+  <div>
+    <label class="block mb-2 font-semibold">Lunch</label>
+    <input id="lunch" type="text" class="w-full p-3 rounded bg-gray-700">
+  </div>
+
+  <div>
+    <label class="block mb-2 font-semibold">Snacks</label>
+    <input id="snacks" type="text" class="w-full p-3 rounded bg-gray-700">
+  </div>
+
+  <div>
+    <label class="block mb-2 font-semibold">Dinner</label>
+    <input id="dinner" type="text" class="w-full p-3 rounded bg-gray-700">
+  </div>
+
+  <div>
+    <label class="block mb-2 font-semibold">Additional Juices</label>
+    <input id="juices" type="text" class="w-full p-3 rounded bg-gray-700">
+  </div>
+</div>
+
+<!-- Comments -->
+<div>
+  <label class="block mb-2 font-semibold">Additional Comments</label>
+  <textarea id="comments" rows="3" class="w-full p-3 rounded bg-gray-700"></textarea>
+</div>
+
+<!-- Score -->
+<div>
+  <label class="block mb-2 font-semibold">Total Score (1–10)</label>
+  <input id="score" type="number" min="1" max="10" class="w-full p-3 rounded bg-gray-700" required>
+</div>
+
+<!-- Submit Button -->
+<button type="button" onclick="submitForm()"
+class="w-full p-4 bg-blue-500 hover:bg-blue-600 rounded-xl text-white font-semibold text-lg">
+  Save Daily Entry
+</button>
+
+</form>
+</div>
+
+</body>
+</html>
