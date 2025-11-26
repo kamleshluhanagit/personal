@@ -12,34 +12,44 @@
 <script src="https://cdn.tailwindcss.com"></script>
 
 <style>
-body {
-  font-family: 'Inter', sans-serif;
-}
+body { font-family: 'Inter', sans-serif; }
+.tab { cursor: pointer; }
+.tab-active { background-color: #1f2937; }
 </style>
 
 <script>
 const GOOGLE_API = "https://script.google.com/macros/s/AKfycbzDOgbUNsGe-fV2ZQaNjhJnPtyAZu6gRxx6N7ayOwGFW1cD-v5eTtrwBSR9cewsSu0_/exec";
 
+/* ---------- TAB HANDLER ---------- */
+function openTab(tab) {
+    document.querySelectorAll(".tab-page").forEach(pg => pg.classList.add("hidden"));
+    document.getElementById(tab).classList.remove("hidden");
+
+    document.querySelectorAll(".tab").forEach(tb => tb.classList.remove("tab-active"));
+    document.getElementById(tab + "-btn").classList.add("tab-active");
+}
+
+/* ---------- SUBMIT DAILY ENTRY ---------- */
 async function submitForm() {
     const data = {
-        date: document.getElementById("entry-date").value,
-        B: document.getElementById("presence-b").value,
-        Muc: document.getElementById("presence-muc").value,
-        frequency: document.getElementById("frequency").value,
-        pentasa: document.getElementById("pentasa").value,
-        stero: document.getElementById("stero").value,
-        additionalMed: document.getElementById("add-med").value,
-        suposit: document.getElementById("suposit").value,
-        breakfast: document.getElementById("breakfast").value,
-        lunch: document.getElementById("lunch").value,
-        snacks: document.getElementById("snacks").value,
-        dinner: document.getElementById("dinner").value,
-        juices: document.getElementById("juices").value,
-        comments: document.getElementById("comments").value,
-        score: document.getElementById("score").value
+        date: entry-date.value,
+        B: presence-b.value,
+        Muc: presence-muc.value,
+        frequency: frequency.value,
+        pentasa: pentasa.value,
+        stero: stero.value,
+        additionalMed: add-med.value,
+        suposit: suposit.value,
+        breakfast: breakfast.value,
+        lunch: lunch.value,
+        snacks: snacks.value,
+        dinner: dinner.value,
+        juices: juices.value,
+        comments: comments.value,
+        score: score.value
     };
 
-    const response = await fetch(GOOGLE_API, {
+    await fetch(GOOGLE_API, {
         method: "POST",
         mode: "no-cors",
         headers: { "Content-Type": "application/json" },
@@ -47,125 +57,204 @@ async function submitForm() {
     });
 
     alert("Daily entry saved successfully!");
-    document.getElementById("health-form").reset();
+    health-form.reset();
+}
+
+/* ---------- LOAD RECORD BY DATE ---------- */
+async function loadRecord() {
+    const date = document.getElementById("viewer-date").value;
+    if (!date) return;
+
+    const res = await fetch(GOOGLE_API + "?date=" + date);
+    const data = await res.json();
+
+    document.getElementById("record-output").innerHTML =
+        data ? `
+        <div class="p-4 bg-gray-700 rounded-xl">
+            <p><strong>Date:</strong> ${data.date}</p>
+            <p><strong>B:</strong> ${data.B}</p>
+            <p><strong>Muc:</strong> ${data.Muc}</p>
+            <p><strong>Frequency:</strong> ${data.frequency}</p>
+            <p><strong>Score:</strong> ${data.score}</p>
+            <p><strong>Comments:</strong> ${data.comments}</p>
+        </div>` :
+        `<p class="text-red-400 mt-4">No record found for this date.</p>`;
+}
+
+/* ---------- ANALYTICS FILTER ---------- */
+async function applyAnalytics() {
+    const scoreMin = document.getElementById("score-min").value;
+    const scoreMax = document.getElementById("score-max").value;
+    const filterB = document.getElementById("filter-b").value;
+    const filterMuc = document.getElementById("filter-muc").value;
+
+    const res = await fetch(GOOGLE_API + "?all=true");
+    const rows = await res.json();
+
+    let filtered = rows;
+
+    if (scoreMin) filtered = filtered.filter(r => r.score >= scoreMin);
+    if (scoreMax) filtered = filtered.filter(r => r.score <= scoreMax);
+    if (filterB !== "All") filtered = filtered.filter(r => r.B === filterB);
+    if (filterMuc !== "All") filtered = filtered.filter(r => r.Muc === filterMuc);
+
+    document.getElementById("analytics-output").innerHTML =
+        filtered.map(r => `
+        <div class="p-4 bg-gray-700 rounded-xl mt-3">
+            <strong>${r.date}</strong><br>
+            Score: ${r.score}<br>
+            B: ${r.B}, Muc: ${r.Muc}, Freq: ${r.frequency}
+        </div>
+        `).join("");
 }
 </script>
 
 </head>
 
-<body class="bg-gray-900 min-h-screen text-white p-6">
+<body class="bg-gray-900 text-white p-6 min-h-screen">
 
-<div class="max-w-3xl mx-auto bg-gray-800 p-8 rounded-2xl shadow-xl">
+<div class="max-w-3xl mx-auto bg-gray-800 p-6 rounded-2xl shadow-xl">
 
 <h1 class="text-3xl font-bold text-center mb-6">Daily Health Tracker</h1>
 
+<!-- ---------- TABS ---------- -->
+<div class="grid grid-cols-3 mb-6 text-center font-semibold">
+  <div id="daily-tab-btn" class="tab tab-active p-3 rounded-xl" onclick="openTab('daily-tab')">
+    Daily Entry
+  </div>
+  <div id="viewer-tab-btn" class="tab p-3 rounded-xl" onclick="openTab('viewer-tab')">
+    Record Viewer
+  </div>
+  <div id="analytics-tab-btn" class="tab p-3 rounded-xl" onclick="openTab('analytics-tab')">
+    Analytics
+  </div>
+</div>
+
+<!-- ============================================================= -->
+<!-- ======================== TAB 1 =============================== -->
+<!-- ============================================================= -->
+<div id="daily-tab" class="tab-page">
+
 <form id="health-form" class="space-y-6">
 
-<!-- Date -->
 <div>
   <label class="block mb-2 font-semibold">Date</label>
-  <input id="entry-date" type="date" class="w-full p-3 rounded bg-gray-700 text-white" required>
+  <input id="entry-date" type="date" class="w-full p-3 rounded bg-gray-700" required>
 </div>
 
-<!-- Yes/No Fields -->
 <div class="grid grid-cols-2 gap-4">
   <div>
-    <label class="block mb-2 font-semibold">Presence of B</label>
+    <label class="block mb-2">Presence of B</label>
     <select id="presence-b" class="w-full p-3 rounded bg-gray-700">
-      <option>No</option>
-      <option>Yes</option>
+      <option>No</option><option>Yes</option>
     </select>
   </div>
 
   <div>
-    <label class="block mb-2 font-semibold">Presence of Muc</label>
+    <label class="block mb-2">Presence of Muc</label>
     <select id="presence-muc" class="w-full p-3 rounded bg-gray-700">
-      <option>No</option>
-      <option>Yes</option>
+      <option>No</option><option>Yes</option>
     </select>
   </div>
 </div>
 
-<!-- Frequency -->
 <div>
-  <label class="block mb-2 font-semibold">Frequency of visits</label>
-  <input id="frequency" type="number" class="w-full p-3 rounded bg-gray-700" required>
+  <label class="block mb-2">Frequency of visits</label>
+  <input id="frequency" type="number" class="w-full p-3 rounded bg-gray-700">
 </div>
 
-<!-- Medications -->
+<!-- MEDICATIONS -->
 <div class="bg-gray-700 p-4 rounded-xl">
-  <h2 class="text-xl font-semibold mb-3">Medications</h2>
+  <h2 class="text-xl mb-3">Medications</h2>
 
   <div class="space-y-4">
-    <div>
-      <label class="block mb-2">Pentasa (mg)</label>
-      <input id="pentasa" type="number" class="w-full p-3 rounded bg-gray-600">
-    </div>
-
-    <div>
-      <label class="block mb-2">Steroid (mg)</label>
-      <input id="stero" type="number" class="w-full p-3 rounded bg-gray-600">
-    </div>
-
-    <div>
-      <label class="block mb-2">Additional Med</label>
-      <input id="add-med" type="text" class="w-full p-3 rounded bg-gray-600">
-    </div>
-
-    <div>
-      <label class="block mb-2">Suposit</label>
-      <input id="suposit" type="text" class="w-full p-3 rounded bg-gray-600">
-    </div>
+    <div><label>Pentasa (mg)</label><input id="pentasa" type="number" class="w-full p-3 rounded bg-gray-600"></div>
+    <div><label>Steroid (mg)</label><input id="stero" type="number" class="w-full p-3 rounded bg-gray-600"></div>
+    <div><label>Additional Med</label><input id="add-med" type="text" class="w-full p-3 rounded bg-gray-600"></div>
+    <div><label>Suposit</label><input id="suposit" type="text" class="w-full p-3 rounded bg-gray-600"></div>
   </div>
 </div>
 
-<!-- Meals -->
 <div class="space-y-4">
-  <div>
-    <label class="block mb-2 font-semibold">Breakfast</label>
-    <input id="breakfast" type="text" class="w-full p-3 rounded bg-gray-700">
-  </div>
-
-  <div>
-    <label class="block mb-2 font-semibold">Lunch</label>
-    <input id="lunch" type="text" class="w-full p-3 rounded bg-gray-700">
-  </div>
-
-  <div>
-    <label class="block mb-2 font-semibold">Snacks</label>
-    <input id="snacks" type="text" class="w-full p-3 rounded bg-gray-700">
-  </div>
-
-  <div>
-    <label class="block mb-2 font-semibold">Dinner</label>
-    <input id="dinner" type="text" class="w-full p-3 rounded bg-gray-700">
-  </div>
-
-  <div>
-    <label class="block mb-2 font-semibold">Additional Juices</label>
-    <input id="juices" type="text" class="w-full p-3 rounded bg-gray-700">
-  </div>
+  <div><label>Breakfast</label><input id="breakfast" class="w-full p-3 rounded bg-gray-700"></div>
+  <div><label>Lunch</label><input id="lunch" class="w-full p-3 rounded bg-gray-700"></div>
+  <div><label>Snacks</label><input id="snacks" class="w-full p-3 rounded bg-gray-700"></div>
+  <div><label>Dinner</label><input id="dinner" class="w-full p-3 rounded bg-gray-700"></div>
+  <div><label>Additional Juices</label><input id="juices" class="w-full p-3 rounded bg-gray-700"></div>
 </div>
 
-<!-- Comments -->
 <div>
-  <label class="block mb-2 font-semibold">Additional Comments</label>
+  <label>Additional Comments</label>
   <textarea id="comments" rows="3" class="w-full p-3 rounded bg-gray-700"></textarea>
 </div>
 
-<!-- Score -->
 <div>
-  <label class="block mb-2 font-semibold">Total Score (1–10)</label>
-  <input id="score" type="number" min="1" max="10" class="w-full p-3 rounded bg-gray-700" required>
+  <label>Total Score (1–10)</label>
+  <input id="score" type="number" min="1" max="10" class="w-full p-3 rounded bg-gray-700">
 </div>
 
-<!-- Submit Button -->
-<button type="button" onclick="submitForm()"
-class="w-full p-4 bg-blue-500 hover:bg-blue-600 rounded-xl text-white font-semibold text-lg">
+<button type="button" onclick="submitForm()" class="w-full p-4 bg-blue-500 hover:bg-blue-600 rounded-xl">
   Save Daily Entry
 </button>
 
 </form>
+</div>
+
+<!-- ============================================================= -->
+<!-- ======================== TAB 2 =============================== -->
+<!-- ============================================================= -->
+<div id="viewer-tab" class="tab-page hidden">
+
+<h2 class="text-xl font-semibold mb-4">View Past Records</h2>
+
+<input type="date" id="viewer-date" class="w-full p-3 rounded bg-gray-700">
+<button onclick="loadRecord()" class="w-full mt-4 p-3 bg-green-500 rounded-xl">Load Record</button>
+
+<div id="record-output" class="mt-6"></div>
+
+</div>
+
+<!-- ============================================================= -->
+<!-- ======================== TAB 3 =============================== -->
+<!-- ============================================================= -->
+<div id="analytics-tab" class="tab-page hidden">
+
+<h2 class="text-xl font-semibold mb-4">Analytics & Filters</h2>
+
+<div class="grid grid-cols-2 gap-4">
+  <div>
+    <label>Score Min</label>
+    <input id="score-min" type="number" class="w-full p-3 rounded bg-gray-700">
+  </div>
+
+  <div>
+    <label>Score Max</label>
+    <input id="score-max" type="number" class="w-full p-3 rounded bg-gray-700">
+  </div>
+</div>
+
+<div class="grid grid-cols-2 gap-4 mt-4">
+  <div>
+    <label>Filter B</label>
+    <select id="filter-b" class="w-full p-3 rounded bg-gray-700">
+      <option>All</option><option>Yes</option><option>No</option>
+    </select>
+  </div>
+
+  <div>
+    <label>Filter Muc</label>
+    <select id="filter-muc" class="w-full p-3 rounded bg-gray-700">
+      <option>All</option><option>Yes</option><option>No</option>
+    </select>
+  </div>
+</div>
+
+<button onclick="applyAnalytics()" class="w-full mt-4 p-3 bg-purple-500 rounded-xl">Apply Filters</button>
+
+<div id="analytics-output" class="mt-6"></div>
+
+</div>
+
 </div>
 
 </body>
