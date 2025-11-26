@@ -100,98 +100,47 @@
   </div>
 
 <script>
-/* paste your Apps Script /exec URL here */
 const GOOGLE_API = "https://script.google.com/macros/s/AKfycbzA3y73tr-kCwiIGMj24b7cUpVtGYPI_WRkqiU0AR9-8HSsgC6V3Kc98ddJKoD-6J3K/exec";
 
-/* Tab handler */
-function openTab(tab) {
-  document.querySelectorAll(".tab-page").forEach(pg => pg.classList.add("hidden"));
-  document.getElementById(tab).classList.remove("hidden");
-  document.querySelectorAll(".tab").forEach(tb => tb.classList.remove("tab-active"));
-  document.getElementById(tab + "-btn").classList.add("tab-active");
-}
-
-/* Submit — uses URLSearchParams (no custom Content-Type header) to avoid preflight */
 async function submitForm() {
-  const formEl = document.getElementById("health-form");
-  const fd = new FormData(formEl);
-  const params = new URLSearchParams();
-
-  for (const [k, v] of fd.entries()) {
-    params.append(k, v);
-  }
+  const payload = {
+    date: document.getElementById("entry-date").value,
+    B: document.getElementById("presence-b").value,
+    Muc: document.getElementById("presence-muc").value,
+    frequency: document.getElementById("frequency").value,
+    pentasa: document.getElementById("pentasa").value,
+    stero: document.getElementById("stero").value,
+    additionalMed: document.getElementById("add-med").value,
+    suposit: document.getElementById("suposit").value,
+    breakfast: document.getElementById("breakfast").value,
+    lunch: document.getElementById("lunch").value,
+    snacks: document.getElementById("snacks").value,
+    dinner: document.getElementById("dinner").value,
+    juices: document.getElementById("juices").value,
+    comments: document.getElementById("comments").value,
+    score: document.getElementById("score").value
+  };
 
   try {
-    const res = await fetch(GOOGLE_API, { method: "POST", body: params });
-    const json = await res.json();
-    if (json.saved) {
-      alert("Daily entry saved successfully!");
-      formEl.reset();
-    } else {
-      alert("Save failed: " + (json.error || JSON.stringify(json)));
-    }
-  } catch (err) {
-    alert("Error saving entry: " + err);
-  }
-}
+    const res = await fetch(GOOGLE_API, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payload)
+    });
 
-/* Load a record by date */
-async function loadRecord() {
-  const date = document.getElementById("viewer-date").value;
-  if (!date) return;
-  try {
-    const res = await fetch(`${GOOGLE_API}?date=${encodeURIComponent(date)}`);
     const data = await res.json();
-    if (!data.found) {
-      document.getElementById("record-output").innerHTML = `<p class="text-red-400 mt-4">No record found for ${date}.</p>`;
-      return;
+    if (data.success) {
+      alert("Entry saved successfully!");
+      document.getElementById("health-form").reset();
+    } else {
+      alert("Server error: " + data.error);
     }
-    const r = data.record;
-    document.getElementById("record-output").innerHTML = `
-      <div class="p-4 bg-gray-700 rounded-xl">
-        <p><strong>Date:</strong> ${r.date}</p>
-        <p><strong>B:</strong> ${r.B}</p>
-        <p><strong>Muc:</strong> ${r.Muc}</p>
-        <p><strong>Frequency:</strong> ${r.frequency}</p>
-        <p><strong>Score:</strong> ${r.score}</p>
-        <p><strong>Comments:</strong> ${r.comments || ''}</p>
-      </div>`;
   } catch (err) {
-    document.getElementById("record-output").innerHTML = `<p class="text-red-400 mt-4">Error: ${err}</p>`;
-  }
-}
-
-/* Analytics */
-async function applyAnalytics() {
-  try {
-    const res = await fetch(`${GOOGLE_API}?all=true`);
-    const rows = await res.json();
-    if (!rows.records) {
-      document.getElementById("analytics-output").innerText = "No records.";
-      return;
-    }
-    let filtered = rows.records;
-    const scoreMin = document.getElementById("score-min").value;
-    const scoreMax = document.getElementById("score-max").value;
-    const filterB = document.getElementById("filter-b").value;
-    const filterMuc = document.getElementById("filter-muc").value;
-
-    if (scoreMin) filtered = filtered.filter(r => Number(r.score) >= Number(scoreMin));
-    if (scoreMax) filtered = filtered.filter(r => Number(r.score) <= Number(scoreMax));
-    if (filterB !== "All") filtered = filtered.filter(r => r.B === filterB);
-    if (filterMuc !== "All") filtered = filtered.filter(r => r.Muc === filterMuc);
-
-    document.getElementById("analytics-output").innerHTML = filtered.map(r => `
-      <div class="p-4 bg-gray-700 rounded-xl mt-3">
-        <strong>${r.date}</strong><br>
-        Score: ${r.score}<br>
-        B: ${r.B}, Muc: ${r.Muc}, Freq: ${r.frequency}
-      </div>`).join("");
-  } catch (err) {
-    document.getElementById("analytics-output").innerText = "Error: " + err;
+    alert("Network Error: " + err);
   }
 }
 </script>
+
 </body>
 </html>
 
