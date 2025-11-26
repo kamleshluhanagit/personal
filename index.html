@@ -38,11 +38,17 @@ body { font-family: 'Inter', sans-serif; }
 <div class="grid grid-cols-2 gap-4">
   <div>
     <label>Presence of B</label>
-    <select id="presence-b" class="w-full p-3 rounded bg-gray-700"><option>No</option><option>Yes</option></select>
+    <select id="presence-b" class="w-full p-3 rounded bg-gray-700">
+      <option>No</option>
+      <option>Yes</option>
+    </select>
   </div>
   <div>
     <label>Presence of Muc</label>
-    <select id="presence-muc" class="w-full p-3 rounded bg-gray-700"><option>No</option><option>Yes</option></select>
+    <select id="presence-muc" class="w-full p-3 rounded bg-gray-700">
+      <option>No</option>
+      <option>Yes</option>
+    </select>
   </div>
 </div>
 
@@ -111,9 +117,10 @@ body { font-family: 'Inter', sans-serif; }
 </div>
 
 <script>
-const GOOGLE_API = "https://script.google.com/macros/s/AKfycbxBQSexOs3XOhV5iaq5u4l2Xe-tDLhw9uRikLFOQLgwGcdVqWxeawihCLogpbFPsuIR/exec";
+/** UPDATE THIS **/
+const GOOGLE_API = "https://script.google.com/macros/s/AKfycbwm1b5QZjV5M7kI1Sj0i2nvy8ZjaJbFdRNCrfW1IMmUPQ_sXm8B6GZ4LXfNDEHBV-Eo/exec";
 
-/* TAB HANDLER */
+/* TABS */
 function openTab(tab) {
   document.querySelectorAll(".tab-page").forEach(pg => pg.classList.add("hidden"));
   document.getElementById(tab).classList.remove("hidden");
@@ -123,30 +130,17 @@ function openTab(tab) {
 
 /* SUBMIT FORM */
 async function submitForm() {
-  const data = {
-    date: document.getElementById("entry-date").value,
-    B: document.getElementById("presence-b").value,
-    Muc: document.getElementById("presence-muc").value,
-    frequency: document.getElementById("frequency").value,
-    pentasa: document.getElementById("pentasa").value,
-    stero: document.getElementById("stero").value,
-    additionalMed: document.getElementById("add-med").value,
-    suposit: document.getElementById("suposit").value,
-    breakfast: document.getElementById("breakfast").value,
-    lunch: document.getElementById("lunch").value,
-    snacks: document.getElementById("snacks").value,
-    dinner: document.getElementById("dinner").value,
-    juices: document.getElementById("juices").value,
-    comments: document.getElementById("comments").value,
-    score: document.getElementById("score").value
-  };
+  const form = new URLSearchParams();
+
+  [
+    "entry-date","presence-b","presence-muc","frequency","pentasa","stero","add-med",
+    "suposit","breakfast","lunch","snacks","dinner","juices","comments","score"
+  ].forEach(id => {
+    form.append(id.replace("entry-", "").replace("-", ""), document.getElementById(id).value);
+  });
 
   try {
-    const res = await fetch(GOOGLE_API, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(data)
-    });
+    const res = await fetch(GOOGLE_API, { method: "POST", body: form });
     const json = await res.json();
     alert("Daily entry saved successfully!");
     document.getElementById("health-form").reset();
@@ -164,9 +158,10 @@ async function loadRecord() {
   const data = await res.json();
 
   if (!data.found) {
-    document.getElementById("record-output").innerHTML = `<p class="text-red-400 mt-4">No record found for this date.</p>`;
+    document.getElementById("record-output").innerHTML = `<p class="text-red-400 mt-4">No record found.</p>`;
     return;
   }
+
   const r = data.record;
   document.getElementById("record-output").innerHTML = `
     <div class="p-4 bg-gray-700 rounded-xl">
@@ -179,16 +174,16 @@ async function loadRecord() {
     </div>`;
 }
 
-/* ANALYTICS FILTER */
+/* ANALYTICS */
 async function applyAnalytics() {
+  const res = await fetch(`${GOOGLE_API}?all=true`);
+  const rows = await res.json();
+  let filtered = rows.records;
+
   const scoreMin = document.getElementById("score-min").value;
   const scoreMax = document.getElementById("score-max").value;
   const filterB = document.getElementById("filter-b").value;
   const filterMuc = document.getElementById("filter-muc").value;
-
-  const res = await fetch(`${GOOGLE_API}?all=true`);
-  const rows = await res.json();
-  let filtered = rows.records;
 
   if (scoreMin) filtered = filtered.filter(r => r.score >= scoreMin);
   if (scoreMax) filtered = filtered.filter(r => r.score <= scoreMax);
@@ -200,10 +195,10 @@ async function applyAnalytics() {
       <strong>${r.date}</strong><br>
       Score: ${r.score}<br>
       B: ${r.B}, Muc: ${r.Muc}, Freq: ${r.frequency}
-    </div>`).join("");
+    </div>
+  `).join("");
 }
 </script>
 
 </body>
 </html>
-
